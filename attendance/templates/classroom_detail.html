@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+{% block page_content %}
+<div class='col-md-8 offset-md-2'>
+    <h2>{{classroom.name}}</h2>
+    <hr>
+    {% if is_attendance_already_taken %}
+        <a href="{% url 'attendance_edit' attendance.pk %}">Edit Today's Attendance</a>
+    {% else %}
+        <a href="{% url 'class_attendance' classroom.pk %}">Take Attendance</a>
+    {% endif %}
+    <table class='table table-striped'>
+        <thead>
+            <tr>
+                <th scope='col'></th>
+                <th scope='col'>First</th>
+                <th scope='col'>Last</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for student in students %}
+            <tr>
+                <th scope='row'>{{forloop.counter}}</th>
+                <td>{{student.first_name}}</td>
+                <td>{{student.last_name}}</td>
+            </tr>
+            {% endfor %}   
+        </tbody>
+    </table>
+    <h4>Add Student:</h4>
+    {% include 'add_student_form.html' with student_form=student_form %}
+    </hr>
+    
+</div>
+{% endblock %}

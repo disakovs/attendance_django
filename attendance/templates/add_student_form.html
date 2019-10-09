@@ -1,0 +1,5 @@
+<form method='POST'>
+{% csrf_token %}
+    {{student_form.as_table}}
+   <button type='submit' class='btn btn-primary'>Add</button>
+</form>

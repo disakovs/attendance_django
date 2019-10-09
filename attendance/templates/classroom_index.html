@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% block page_content %}
+<div class='col-md-6 offset-md-3'>
+    <h2>All Classes:</h1>
+    <hr>
+    {% for classgroup in classrooms %}
+        <h3>{{classgroup.first.type}} Classes:</h2>
+        {% for class in classgroup %}
+            <ul>
+                <li>
+                    <a href="{% url 'classroom_detail' class.pk %}">{{class.name}}</a>
+                </li>
+            </ul>
+        {% endfor %}
+     {% endfor %}
+</div>
+{% endblock %}
