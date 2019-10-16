@@ -12,9 +12,6 @@ class AttendanceForm(forms.ModelForm):
                 'students' : forms.CheckboxSelectMultiple(),
         }
         
-        # def __init__(self, classroom, *args, **kwargs):
-        #     super(AttendanceForm, self).__init__(*args, **kwargs)
-        #     self.fields['students'].queryset = Student.objects.filter(classroom=classroom)
 
 class StudentForm(forms.ModelForm):
     class Meta:

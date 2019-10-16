@@ -1,14 +1,18 @@
 {% extends 'base.html' %}
 {% block page_content %}
 <div class='col-md-8 offset-md-2'>
-    <h2>Students</h2>
+    <h2>{{classroom.name}}</h2>
+        <a href="{% url 'class_attendance' classroom.pk %}">Take Attendance</a>
+        <br/>
+        {% if last_attendance %}
+        <a href="{% url 'attendance_edit' last_attendance.pk %}">Edit Last Attendance</a>
+        {% endif %}
     <table class='table table-striped'>
         <thead>
             <tr>
                 <th scope='col'></th>
                 <th scope='col'>First</th>
                 <th scope='col'>Last</th>
-                <th scope='col'>Class</th>
             </tr>
         </thead>
         <tbody>
@@ -17,11 +21,13 @@
                 <th scope='row'>{{forloop.counter}}</th>
                 <td>{{student.first_name}}</td>
                 <td>{{student.last_name}}</td>
-                <td>{{student.classroom}}</td>
             </tr>
-            {% endfor %}
+            {% endfor %}   
         </tbody>
     </table>
+    <h4>Add Student:</h4>
+    {% include 'attendance/add_student_form.html' with student_form=student_form %}
+    </hr>
     
 </div>
 {% endblock %}

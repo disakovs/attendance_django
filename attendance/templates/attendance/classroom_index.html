@@ -3,7 +3,7 @@
 <div class='col-md-6 offset-md-3'>
     <h2>All Classes:</h1>
     <hr>
-    {% for classgroup in classrooms %}
+    {% for classgroup in object_list %}
         <h3>{{classgroup.first.type}} Classes:</h2>
         {% for class in classgroup %}
             <ul>

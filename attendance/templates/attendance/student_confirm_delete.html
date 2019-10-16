@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+{% block page_content %}
+<div class='col-md-8 offset-md-2'>
+    <form action='' method='post'>
+    {% csrf_token %}
+    <p> Are you sure you want to delete "{{object}}"?</p>
+    <input class='btn btn-danger' type='submit' value='Confirm'/>
+    <a class='btn btn-secondary' href="{% url 'student_index' %}">Cancel</a>
+    </form>
+    
+</div>
+{% endblock %}

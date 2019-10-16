@@ -4,8 +4,8 @@
     <h2>Edit Attendance for {{classroom.name}}</h2>
     <form action="/classes/{{classroom.pk}}/attendance/" method='post'>
     {% csrf_token %}
-    {{attendance_form.as_p}}
-    <button type='submit' class='btn btn-primary'>Submit</button>
+    {{form.as_p}}
+    <button type='submit' class='btn btn-primary'>Update</button>
     </form>
 </div>
 {% endblock %}

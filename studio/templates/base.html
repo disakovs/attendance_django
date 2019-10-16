@@ -10,7 +10,7 @@
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
           <ul class="navbar-nav mr-auto">
             <li class="nav-item active">
-              <a class="nav-link" href="{% url 'classroom_index' %}">Classes</a>
+              <a class="nav-link" href="{% url 'classroom_list' %}">Classes</a>
             </li>
             <li class="nav-item">
               <a class="nav-link" href="{% url 'student_index' %}">Students</a>
@@ -20,6 +20,16 @@
     </div>
 
 </nav>
+
+{% if messages %}
+<div class='container'>
+<div class='alert alert-success alert-dismissable' role='alert'>
+{% for message in messages %}
+{{message}}<br/>
+{% endfor %}
+</div>
+</div>
+{% endif %}
 
 <div class="container">
     {% block page_content %}{% endblock %}

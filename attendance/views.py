@@ -3,103 +3,142 @@ from .models import Teacher, Attendance, Classroom, Student
 from .forms import AttendanceForm, StudentForm
 from django.utils import timezone
 import datetime
+from django.contrib.auth.decorators import login_required
+from django.utils.decorators import method_decorator
+from django.urls import reverse, reverse_lazy
 
+from django.views.generic.base import TemplateView, TemplateResponseMixin, ContextMixin
+from django.views.generic.detail import DetailView
+from django.views.generic.list import ListView
+from django.views.generic.edit import CreateView, UpdateView, DeleteView, ModelFormMixin
+from django.views.generic import View
+from django.http import HttpResponse
+#messages
+from django.contrib import messages
 # Create your views here.
-def home(request):
-    return render(request, 'home.html')
+class DashboardTemplateView(TemplateView):
+    template_name= 'home.html'
 
-def classroom_index(request):
-    parkour_classes = Classroom.objects.filter(type='Parkour')
-    gymnastics_classes = Classroom.objects.filter(type='Gymnastics')
-    classrooms = (parkour_classes, gymnastics_classes)
+class ClassroomDetail(ModelFormMixin, DetailView):
+    model = Classroom
+    form_class = StudentForm
     
-    context = {
-        'classrooms' : classrooms
-    }
-    
-    return render(request, 'classroom_index.html', context)
-    
-def classroom_detail(request, pk):
-    classroom = Classroom.objects.get(pk=pk)
-    students = Student.objects.filter(classroom=classroom)
-    student_form = StudentForm(initial={'classroom' : classroom})
-    #prevent taking attendance twice in one day:
-    attendance = None
-    is_attendance_already_taken = False
-    todays_attendance = classroom.attendance_set.filter(date=datetime.date.today()).last() or None
-    
-    if todays_attendance:
-        is_attendance_already_taken = True
-        attendance = todays_attendance
+    def get_context_data(self, *args, **kwargs):
+        context = super().get_context_data(*args, **kwargs)
+        last_attendance = self.object.attendance_set.last()
 
-    context = {
-        'classroom' : classroom,
-        'students' : students,
-        'student_form' : student_form,
-        'is_attendance_already_taken': is_attendance_already_taken,
-        'attendance' : attendance,
-    }
+        context['student_form'] = StudentForm(initial={'classroom' : context['classroom']}) #self.get_form()
+        context['students'] = context['classroom'].student_set.all()
+        context['last_attendance'] = last_attendance
+
+        return context
     
-    if request.method == 'POST':
-        form = StudentForm(request.POST)
+    def post(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        form = self.form_class(request.POST)
+        
         if form.is_valid():
-            print(form.cleaned_data)
-            form.save()
-            return redirect('classroom_detail', pk=pk)
-    
-    return render(request, 'classroom_detail.html', context)
-    
-def student_index(request):
-    students = Student.objects.all().order_by('-classroom')
-    
-    context = {
-        'students': students
-    }
-    
-    return render(request, 'student_index.html', context)
+            return self.form_valid(form)
+        else: 
+            return self.form_invalid(form)
+        
+    def get_success_url(self, **kwargs):
+        messages.success(self.request, "Student created!")
+        print('type', type(self.object.classroom_id), self.object.classroom_id)
+        return reverse('classroom_detail', kwargs = {'pk': self.object.classroom_id })
 
-def classroom_attendance(request, pk):
-    classroom = Classroom.objects.get(pk=pk)
-    students = Student.objects.filter(classroom=classroom)
-    attendance_form = AttendanceForm(initial = {
-        'classroom':classroom,
-        'date': timezone.now(),
-    })
-    attendance_form.fields['students'].queryset = students
-    print(attendance_form.fields)
+class ClassroomListView(ListView):
+    model = Classroom
     
-    if request.method == 'POST':
-        attendance_form = AttendanceForm(request.POST)
-        if attendance_form.is_valid():
-            attendance_form.save()
-            return redirect('classroom_detail', pk=pk)
-            
-    context = {
-        'classroom' : classroom,
-        'attendance_form' : attendance_form,
-    }
+    def get_context_data(self, *args, **kwargs):
+        context = super().get_context_data(*args, **kwargs)
+        
+        parkour_classes = Classroom.objects.filter(type='Parkour')
+        gymnastics_classes = Classroom.objects.filter(type='Gymnastics')
+        all_classes = [parkour_classes, gymnastics_classes]
+        
+        context['all_classes'] = all_classes
+        
+        return context
 
-    return render(request, 'classroom_attendance.html', context)
+class StudentListView(ListView):
+    model = Student
+    ordering = ['first_name', 'last_name']
 
-def attendance_edit(request, pk):
-    attendance = Attendance.objects.get(pk=pk)
-    classroom = attendance.classroom
-    students = Student.objects.filter(classroom=classroom)
-    attendance_form = AttendanceForm(instance=attendance)
-    attendance_form.fields['students'].queryset = students
+class StudentCreateView(CreateView):
+    model = Student
+    template_name = 'att/student_form.html'
+    fields = ['first_name', 'last_name', 'classroom']
     
-    if request.method == 'POST':
-        attendance_form = AttendanceForm(request.POST)
-        if attendance_form.is_valid():
-            attendance_form.save()
-            return redirect('classroom_detail', pk=classroom.pk)
-              
-    context = {
-        'classroom' : classroom,
-        'attendance_form' : attendance_form,
-    }
+    def get_success_url(self):
+        messages.success(self.request, "Student created!")
+        return reverse('classroom_list')
+        
+class StudentUpdateView(UpdateView):
+    model = Student
+    template_name = 'attendance/student_form.html'
+    fields = ['first_name', 'last_name', 'classroom']
+    
+    def get_success_url(self):
+        return reverse('student_index')
 
-    return render(request, 'attendance_edit.html', context)
+class StudentDeleteView(DeleteView):
+    model = Student
+    template_name = 'attendance/student_confirm_delete.html'
+    
+    def get_success_url(self):
+        return reverse('student_index')
+
+class AttendanceCreateView(CreateView):
+    template_name = 'attendance/classroom_attendance.html'
+    form_class = AttendanceForm
+    
+    def get_initial(self, *args, **kwargs):
+        initial = super().get_initial()
+        
+        classroom = Classroom.objects.get(pk=self.kwargs['pk'])       
+        initial['classroom'] = classroom
+        initial['date'] = timezone.now()
+        
+        return initial
+     
+    def get_form(self, *args, **kwargs):
+        form = super().get_form(*args, **kwargs)
+        classroom = Classroom.objects.get(pk=self.kwargs['pk'])
+
+        form.fields['students'].queryset = Student.objects.filter(classroom=classroom)
+        return form
+        
+    def get_success_url(self):
+        print('self kwargs:  ', self.kwargs)
+        return reverse('classroom_detail', kwargs = {'pk': self.kwargs['pk'] })
+
+class AttendanceUpdateView(UpdateView):
+    model = Attendance
+    form_class = AttendanceForm
+    template_name = 'attendance/attendance_edit.html'
+    
+    def get_context_data(self, *args, **kwargs):
+        context = super().get_context_data(*args, **kwargs)
+        
+        classroom = Classroom.objects.get(pk=context['object'].classroom_id)
+        context['classroom'] = classroom 
+        
+        return context
+    
+    def get_form(self, *args, **kwargs):
+        form = super().get_form(*args, **kwargs)
+        
+        classroom = self.object.classroom
+        form.fields['students'].queryset = classroom.student_set
+        
+        return form
+    
+    def get_success_url(self):
+        classroom = self.object.classroom
+        return reverse('classroom_detail', kwargs = {'pk': classroom.pk})
+
+
     
     
     

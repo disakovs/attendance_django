@@ -1,4 +1,5 @@
 from django.db import models
+from django.urls import reverse 
 
 # Create your models here.
 class NamableModel:
@@ -13,6 +14,8 @@ class Student(NamableModel, models.Model):
     last_name = models.CharField(max_length=20)
     classroom = models.ForeignKey('Classroom', on_delete=models.CASCADE)
     
+    class Meta:
+        unique_together = ['first_name', 'last_name']
 
     
 class Classroom(models.Model):
@@ -40,6 +43,9 @@ class Classroom(models.Model):
      
     def __str__(self):
         return self.name
+        
+    def get_absolute_url(self):
+        return reverse('classroom_detail', args=(str(self.pk)))
      
 class Teacher(NamableModel, models.Model):
     first_name = models.CharField(max_length=20)
