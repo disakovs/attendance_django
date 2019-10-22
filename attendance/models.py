@@ -1,5 +1,6 @@
 from django.db import models
-from django.urls import reverse 
+from django.urls import reverse
+from datetime import date
 
 # Create your models here.
 class NamableModel:
@@ -46,7 +47,17 @@ class Classroom(models.Model):
         
     def get_absolute_url(self):
         return reverse('classroom_detail', args=(str(self.pk)))
-     
+    
+    def is_attendance_taken_today(self):
+        "returns boolean value depending on if attendance was taken that day for a particular class"
+        qs = self.attendance_set.all()
+        if qs:
+            today_attendance = qs.get(date=date.today())
+            if today_attendance:
+                return True
+        
+        return False
+        
 class Teacher(NamableModel, models.Model):
     first_name = models.CharField(max_length=20)
     last_name = models.CharField(max_length=20)
@@ -59,4 +70,6 @@ class Attendance(models.Model):
     classroom = models.ForeignKey('Classroom', on_delete=models.CASCADE)
     teacher = models.ForeignKey('Teacher', on_delete=models.CASCADE)
     
+    #def is_attendance_already_taken_for_this_class_today(self):
+    #    Classroom.objects.get(classroom=self.classroom).attendance_set.get(date=date.today())
     

@@ -3,7 +3,7 @@ from .models import Teacher, Attendance, Classroom, Student
 from .forms import AttendanceForm, StudentForm
 from django.utils import timezone
 import datetime
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.utils.decorators import method_decorator
 from django.urls import reverse, reverse_lazy
 
@@ -17,9 +17,9 @@ from django.http import HttpResponse
 from django.contrib import messages
 # Create your views here.
 class DashboardTemplateView(TemplateView):
-    template_name= 'home.html'
+    template_name= 'attendance/home.html'
 
-class ClassroomDetail(ModelFormMixin, DetailView):
+class ClassroomDetail(LoginRequiredMixin, ModelFormMixin, DetailView):
     model = Classroom
     form_class = StudentForm
     
@@ -65,7 +65,7 @@ class StudentListView(ListView):
     model = Student
     ordering = ['first_name', 'last_name']
 
-class StudentCreateView(CreateView):
+class StudentCreateView(LoginRequiredMixin, CreateView):
     model = Student
     template_name = 'att/student_form.html'
     fields = ['first_name', 'last_name', 'classroom']
@@ -74,7 +74,7 @@ class StudentCreateView(CreateView):
         messages.success(self.request, "Student created!")
         return reverse('classroom_list')
         
-class StudentUpdateView(UpdateView):
+class StudentUpdateView(LoginRequiredMixin, UpdateView):
     model = Student
     template_name = 'attendance/student_form.html'
     fields = ['first_name', 'last_name', 'classroom']
@@ -82,14 +82,14 @@ class StudentUpdateView(UpdateView):
     def get_success_url(self):
         return reverse('student_index')
 
-class StudentDeleteView(DeleteView):
+class StudentDeleteView(LoginRequiredMixin, DeleteView):
     model = Student
     template_name = 'attendance/student_confirm_delete.html'
     
     def get_success_url(self):
         return reverse('student_index')
 
-class AttendanceCreateView(CreateView):
+class AttendanceCreateView(LoginRequiredMixin, CreateView):
     template_name = 'attendance/classroom_attendance.html'
     form_class = AttendanceForm
     
@@ -113,7 +113,7 @@ class AttendanceCreateView(CreateView):
         print('self kwargs:  ', self.kwargs)
         return reverse('classroom_detail', kwargs = {'pk': self.kwargs['pk'] })
 
-class AttendanceUpdateView(UpdateView):
+class AttendanceUpdateView(LoginRequiredMixin, UpdateView):
     model = Attendance
     form_class = AttendanceForm
     template_name = 'attendance/attendance_edit.html'

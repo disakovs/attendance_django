@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block page_content %}
+{% if form.errors %}
+  <p>Your username and password didn't match. Please try again.</p>
+{% endif %}
+
+{% if next %}
+  {% if user.is_authenticated %}
+    <p>Your account doesn't have access to this page. To proceed,
+    please login with an account that has access.</p>
+  {% else %}
+    <p>Please login to see this page.</p>
+  {% endif %}
+{% endif %}
+
+<div class="container">
+<div class="row">
+  <div class="col-sm-9 col-md-7 col-lg-5 mx-auto">
+    <div class="card card-signin my-5">
+      <div class="card-body">
+        <h5 class="card-title text-center">Sign In</h5>
+        <form class="form-signin" method='post' action="{% url 'login' %}">
+        {% csrf_token %} 
+          <div class="form-label-group">
+            <input type="text" name='username' id="id_username" class="form-control" placeholder="Username" required autofocus>
+            <label for="id_username">Username</label>
+          </div>
+
+          <div class="form-label-group">
+            <input type="password" name='password' id="id_password" class="form-control" placeholder="Password" required>
+            <label for="id_password">Password</label>
+          </div>
+
+          <button class="btn btn-lg btn-primary btn-block text-uppercase" type="submit" value='login' >Sign in</button>
+          <p><a href="{% url 'password_reset' %}">Lost password?</a></p>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+{% endblock %}

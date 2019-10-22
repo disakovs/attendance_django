@@ -2,8 +2,10 @@
 {% block page_content %}
 <div class='col-md-8 offset-md-2'>
     <h2>{{classroom.name}}</h2>
+        {% if not classroom.is_attendance_taken_today %}
         <a href="{% url 'class_attendance' classroom.pk %}">Take Attendance</a>
         <br/>
+        {% endif %}
         {% if last_attendance %}
         <a href="{% url 'attendance_edit' last_attendance.pk %}">Edit Last Attendance</a>
         {% endif %}
