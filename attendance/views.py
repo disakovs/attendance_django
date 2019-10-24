@@ -1,4 +1,5 @@
 from django.shortcuts import render, redirect
+from django.db.models import Q
 from .models import Teacher, Attendance, Classroom, Student
 from .forms import AttendanceForm, StudentForm
 from django.utils import timezone
@@ -19,6 +20,27 @@ from django.contrib import messages
 class DashboardTemplateView(TemplateView):
     template_name= 'attendance/home.html'
 
+class StudentSearchView(ListView):
+    template_name = 'attendance/student_search.html'
+    
+    def get_context_data(self, *args, **kwargs):
+        context = super().get_context_data(*args, **kwargs)
+        context['q'] = self.request.GET.get('q')
+        return context
+    
+    def get_queryset(self):
+        query = self.request.GET.get('q')
+        all_students = Student.objects.all()
+        
+        if query:
+            result = all_students.filter(
+                Q(first_name__icontains=query) |
+                Q(last_name__icontains=query) |
+                Q(classroom__name__icontains=query)
+            )
+            return result
+        return all_students
+    
 class ClassroomDetail(LoginRequiredMixin, ModelFormMixin, DetailView):
     model = Classroom
     form_class = StudentForm
@@ -67,7 +89,7 @@ class StudentListView(ListView):
 
 class StudentCreateView(LoginRequiredMixin, CreateView):
     model = Student
-    template_name = 'att/student_form.html'
+    template_name = 'attendance/student_form.html'
     fields = ['first_name', 'last_name', 'classroom']
     
     def get_success_url(self):
@@ -93,6 +115,13 @@ class AttendanceCreateView(LoginRequiredMixin, CreateView):
     template_name = 'attendance/classroom_attendance.html'
     form_class = AttendanceForm
     
+    def get_context_data(self, *args, **kwargs):
+        context = super().get_context_data(*args, **kwargs)
+        print('CONTEXT :', context)
+        print('object' , self.object)
+        print('kwargs' , self.kwargs)
+        return context
+    
     def get_initial(self, *args, **kwargs):
         initial = super().get_initial()
         
@@ -110,7 +139,7 @@ class AttendanceCreateView(LoginRequiredMixin, CreateView):
         return form
         
     def get_success_url(self):
-        print('self kwargs:  ', self.kwargs)
+        messages.success(self.request, "Attendance taken!")
         return reverse('classroom_detail', kwargs = {'pk': self.kwargs['pk'] })
 
 class AttendanceUpdateView(LoginRequiredMixin, UpdateView):
@@ -120,7 +149,7 @@ class AttendanceUpdateView(LoginRequiredMixin, UpdateView):
     
     def get_context_data(self, *args, **kwargs):
         context = super().get_context_data(*args, **kwargs)
-        
+        print(context)
         classroom = Classroom.objects.get(pk=context['object'].classroom_id)
         context['classroom'] = classroom 
         
@@ -136,6 +165,8 @@ class AttendanceUpdateView(LoginRequiredMixin, UpdateView):
     
     def get_success_url(self):
         classroom = self.object.classroom
+        date = self.object.date
+        messages.success(self.request, f"Attendance taken on {date.strftime('%A')} {date} is now updated!")
         return reverse('classroom_detail', kwargs = {'pk': classroom.pk})
 
 

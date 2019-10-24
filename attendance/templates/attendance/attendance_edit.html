@@ -2,7 +2,7 @@
 {% block page_content %}
 <div class='col-md-8 offset-md-2'>
     <h2>Edit Attendance for {{classroom.name}}</h2>
-    <form action="/classes/{{classroom.pk}}/attendance/" method='post'>
+    <form action="{%url 'attendance_edit' object.id%}" method='post'>
     {% csrf_token %}
     {{form.as_p}}
     <button type='submit' class='btn btn-primary'>Update</button>

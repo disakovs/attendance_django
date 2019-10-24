@@ -3,7 +3,9 @@ from django.contrib.auth import get_user_model
 from django.test import TestCase, RequestFactory
 from django.urls import reverse
 from attendance.models import Student, Classroom, Teacher, Attendance
-from attendance.views import ClassroomDetail, StudentListView, StudentUpdateView, StudentDeleteView
+from attendance.views import (ClassroomDetail, StudentListView, StudentUpdateView, 
+                               StudentDeleteView, AttendanceUpdateView, 
+                               AttendanceCreateView,)
 from attendance.forms import AttendanceForm, StudentForm
 from django.utils import timezone
 from datetime import date
@@ -69,3 +71,41 @@ class StudentViewAuthTestCase(TestCase):
         
         self.assertEqual(response.status_code, 302)
         self.assertEqual(Student.objects.count(), 0)
+
+class AttendanceViewAuthTestCase(TestCase):
+    def setUp(self):
+        self.classroom = Classroom.objects.create(type='Parkour', age_limit='5-7', name='Parkour Ninja')
+        self.student1 = Student.objects.create(first_name="Bob", last_name="Test", classroom=self.classroom)
+        self.student2 = Student.objects.create(first_name='Another', last_name='Kill', classroom=self.classroom)
+        self.factory = RequestFactory()
+
+        self.user = User.objects.create(
+                    username='abc23444',
+                    password='passwordtest123',
+                    )
+                    
+    def test_student_attendance_create_view(self):
+        attendance_url = reverse('class_attendance', kwargs = {'pk': str(self.classroom.id)})
+        request = self.factory.get(attendance_url)
+        request.user = self.user
+        response = AttendanceCreateView.as_view()(request, pk=self.classroom.id)
+        
+        self.assertEqual(response.status_code, 200)
+        
+    # def test_student_update_view(self):
+    #     student_edit_url = reverse("student_edit", kwargs = {'pk': str(self.student.id)})
+    #     request = self.factory.post(student_edit_url, data=self.data)
+    #     request.user = self.user
+    #     response = StudentUpdateView.as_view()(request, pk=self.student.id)
+    #     
+    #     self.assertEqual(response.status_code, 302)
+    #     self.assertEqual(Student.objects.get(pk=1).first_name, "Changed")
+    #     
+    # def test_student_delete_view(self):
+    #     student_delete_url = reverse("student_delete", kwargs = {'pk': str(self.student.id)})
+    #     request = self.factory.post(student_delete_url)
+    #     request.user = self.user
+    #     response = StudentDeleteView.as_view()(request, pk=self.student.id)
+    #     
+    #     self.assertEqual(response.status_code, 302)
+    #     self.assertEqual(Student.objects.count(), 0)

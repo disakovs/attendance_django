@@ -17,10 +17,12 @@ from django.contrib import admin
 from django.urls import path, include
 
 from django.views.generic.base import TemplateView
+from attendance.views import StudentSearchView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('attendance.urls')),
     path('accounts/', include('django.contrib.auth.urls')),
+    path('students/search/', StudentSearchView.as_view(), name='student_search')
 ]
 
