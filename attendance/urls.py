@@ -1,8 +1,9 @@
 from django.urls import path
 from . import views
-
+from django_filters.views import FilterView
 from django.views.generic.base import TemplateView
 from .views import StudentListView, DashboardTemplateView, ClassroomDetail, StudentCreateView, StudentUpdateView, StudentDeleteView
+from .filters import AttendanceFilter
 
 urlpatterns = [
     path('', views.DashboardTemplateView.as_view(), name='home'),
@@ -14,4 +15,5 @@ urlpatterns = [
     path('students/create/', views.StudentCreateView.as_view(), name='student_create'),
     path('attendance/<int:pk>/edit/', views.AttendanceUpdateView.as_view(), name='attendance_edit'),
     path('classes/<int:pk>/attendance/', views.AttendanceCreateView.as_view(), name='class_attendance'),
+    path('attendance/search/', FilterView.as_view(filterset_class=AttendanceFilter, template_name='attendance/attendance_filter.html'), name='attendance_filter'),
 ]

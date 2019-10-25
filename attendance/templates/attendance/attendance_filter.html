@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+{% block page_content %}
+<div class='col-md-8 offset-md-2'>
+    <h2>Attendance Search</h2>
+    
+    <form method="get">
+    {% csrf_token %}
+    {{ filter.form.as_p }}
+    <button type="submit">Search</button>
+  </form>
+  {% if not filter.qs %}
+  <h3>No results found</h3>
+  {% else %}
+  <table class='table table-striped'>
+        <thead>
+            <tr>
+                <th scope='col'>Date</th>
+                <th scope='col'>Day</th>
+                <th scope='col'>Class</th>
+                <th scope='col'>Students Attended</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for attendance in filter.qs %}
+            <tr>
+                <th scope='row'>{{attendance.date}}</th>
+                <td>{{attendance.date|date:"D" }}</td>
+                <td>{{attendance.classroom}}</td>
+                <td>{{attendance.students.count}}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% endif %}
+</div>
+{% endblock %}
