@@ -33,7 +33,7 @@ class StudentSearchViewTestCase(TestCase):
     def test_student_search_valid(self):
         url = '{url}?{filter}={value}'.format(
             url=reverse('student_search'),
-            filter='q', 
+            filter='q',
             value='parkour')
         response = self.client.get(url)
         self.assertEqual(response.context['object_list'].count(), 2)
@@ -41,7 +41,7 @@ class StudentSearchViewTestCase(TestCase):
     def test_student_search_empty_string(self):
         url = '{url}?{filter}={value}'.format(
             url=reverse('student_search'),
-            filter='q', 
+            filter='q',
             value='')
         response = self.client.get(url)
         self.assertEqual(response.context['object_list'].count(), 2)
@@ -49,7 +49,7 @@ class StudentSearchViewTestCase(TestCase):
     def test_student_search_valid_partial_return(self):
         url = '{url}?{filter}={value}'.format(
             url=reverse('student_search'),
-            filter='q', 
+            filter='q',
             value='bill')
         response = self.client.get(url)
         self.assertEqual(response.context['object_list'].count(), 1)
@@ -57,7 +57,7 @@ class StudentSearchViewTestCase(TestCase):
     def test_student_search_nothing_found(self):
         url = '{url}?{filter}={value}'.format(
             url=reverse('student_search'),
-            filter='q', 
+            filter='q',
             value='kram')
         response = self.client.get(url)
         self.assertEqual(response.context['object_list'].count(), 0)
